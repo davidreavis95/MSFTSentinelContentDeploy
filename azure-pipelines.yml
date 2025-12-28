@@ -26,6 +26,16 @@ pool:
 
 variables:
   pythonVersion: '3.11'
+  # Option 1: Link to a variable group (recommended for multiple pipelines)
+  # Uncomment the line below and create a variable group named 'sentinel-deployment-vars'
+  # - group: sentinel-deployment-vars
+  
+  # Option 2: Define variables directly in the pipeline
+  # Uncomment and set these variables, or use the Azure DevOps UI to add them as pipeline variables
+  # AZURE_SERVICE_CONNECTION: 'your-service-connection-name'
+  # AZURE_SUBSCRIPTION_ID: 'your-subscription-id'
+  # AZURE_RESOURCE_GROUP: 'your-resource-group'
+  # SENTINEL_WORKSPACE_NAME: 'your-workspace-name'
 
 stages:
   - stage: Deploy
@@ -66,6 +76,9 @@ stages:
               inlineScript: |
                 echo "Starting Microsoft Sentinel Content Deployment"
                 echo "Environment: ${{ parameters.environment }}"
+                echo "Subscription: $(AZURE_SUBSCRIPTION_ID)"
+                echo "Resource Group: $(AZURE_RESOURCE_GROUP)"
+                echo "Workspace: $(SENTINEL_WORKSPACE_NAME)"
                 
                 # Set environment variables for the Python script
                 export AZURE_SUBSCRIPTION_ID="$(AZURE_SUBSCRIPTION_ID)"

@@ -6,6 +6,8 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 
 **New to this project?** Check out the [Quick Start Guide](QUICKSTART.md) to get up and running in 5 minutes!
 
+**Setting up Azure DevOps?** See the detailed [Azure DevOps Setup Guide](AZURE_DEVOPS_SETUP.md) for comprehensive instructions.
+
 ## 🚀 Features
 
 - **Automated Deployment**: Deploy Sentinel content automatically via Azure DevOps Pipelines
