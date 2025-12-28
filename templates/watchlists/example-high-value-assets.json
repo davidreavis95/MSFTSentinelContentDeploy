@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace with Microsoft Sentinel"
+      }
+    },
+    "watchlistAlias": {
+      "type": "string",
+      "defaultValue": "HighValueAssets",
+      "metadata": {
+        "description": "Alias for the watchlist"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/Watchlists",
+      "apiVersion": "2023-02-01-preview",
+      "name": "[concat(parameters('workspace'), '/Microsoft.SecurityInsights/', parameters('watchlistAlias'))]",
+      "properties": {
+        "displayName": "High Value Assets (Example)",
+        "description": "Example watchlist containing high value assets. Replace with your actual exported watchlist.",
+        "provider": "Microsoft",
+        "source": "Local file",
+        "itemsSearchKey": "AssetName",
+        "rawContent": "AssetName,IPAddress,Owner,Criticality\nDC01,10.0.0.10,IT Admin,High\nWEB-SERVER-01,10.0.1.20,WebOps,Medium\nDB-PROD-01,10.0.2.30,DBA Team,High",
+        "contentType": "text/csv",
+        "numberOfLinesToSkip": 0
+      }
+    }
+  ]
+}
