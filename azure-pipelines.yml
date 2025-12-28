@@ -1,5 +1,5 @@
 # Azure DevOps Pipeline for Microsoft Sentinel Content Deployment
-# This pipeline automatically deploys ARM templates for Sentinel content
+# This pipeline automatically deploys ARM templates for Sentinel content using Azure CLI
 # Triggers on changes to templates and can be run manually
 
 trigger:
@@ -25,7 +25,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  pythonVersion: '3.11'
   # Option 1: Link to a variable group (recommended for multiple pipelines)
   # Uncomment the line below and create a variable group named 'sentinel-deployment-vars'
   # - group: sentinel-deployment-vars
@@ -34,7 +33,6 @@ variables:
   # Set these variables in the Azure DevOps UI under Pipeline → Edit → Variables
   # Or uncomment and set them here (not recommended for sensitive values)
   # AZURE_SERVICE_CONNECTION: 'your-service-connection-name'  # REQUIRED
-  # AZURE_SUBSCRIPTION_ID: 'your-subscription-id'
   # AZURE_RESOURCE_GROUP: 'your-resource-group'
   # SENTINEL_WORKSPACE_NAME: 'your-workspace-name'
 
@@ -48,51 +46,140 @@ stages:
           - checkout: self
             displayName: 'Checkout repository'
             
-          - task: UsePythonVersion@0
-            displayName: 'Set up Python $(pythonVersion)'
-            inputs:
-              versionSpec: '$(pythonVersion)'
-              addToPath: true
-              
-          - task: Cache@2
-            displayName: 'Cache pip packages'
-            inputs:
-              key: 'python | "$(Agent.OS)" | $(Build.SourcesDirectory)/requirements.txt'
-              restoreKeys: |
-                python | "$(Agent.OS)"
-                python
-              path: $(Pipeline.Workspace)/.pip
-              
-          - script: |
-              python -m pip install --upgrade pip
-              pip install --cache-dir $(Pipeline.Workspace)/.pip -r requirements.txt
-            displayName: 'Install Python dependencies'
-            
           - task: AzureCLI@2
             displayName: 'Deploy Sentinel Content'
             inputs:
               azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
-              scriptType: 'bash'
+              scriptType: 'pscore'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                echo "Starting Microsoft Sentinel Content Deployment"
-                echo "Environment: ${{ parameters.environment }}"
-                echo "Subscription: $(AZURE_SUBSCRIPTION_ID)"
-                echo "Resource Group: $(AZURE_RESOURCE_GROUP)"
-                echo "Workspace: $(SENTINEL_WORKSPACE_NAME)"
+                Write-Host "=" * 80
+                Write-Host "Microsoft Sentinel Content Deployment"
+                Write-Host "=" * 80
+                Write-Host "Environment: ${{ parameters.environment }}"
+                Write-Host "Resource Group: $(AZURE_RESOURCE_GROUP)"
+                Write-Host "Workspace: $(SENTINEL_WORKSPACE_NAME)"
+                Write-Host "=" * 80
+                Write-Host ""
                 
-                # Set environment variables for the Python script
-                export AZURE_SUBSCRIPTION_ID="$(AZURE_SUBSCRIPTION_ID)"
-                export AZURE_RESOURCE_GROUP="$(AZURE_RESOURCE_GROUP)"
-                export SENTINEL_WORKSPACE_NAME="$(SENTINEL_WORKSPACE_NAME)"
-                export TEMPLATES_DIR="templates"
+                $totalDeployed = 0
+                $totalFailed = 0
                 
-                # Run the deployment script
-                python scripts/deploy_sentinel_content.py
-              addSpnToEnvironment: true
-              useGlobalConfig: true
-              
-          - script: |
-              az logout
-            displayName: 'Logout from Azure'
-            condition: always()
+                # Deploy Analytics Rules
+                Write-Host "=" * 80
+                Write-Host "Deploying Analytics Rules"
+                Write-Host "=" * 80
+                
+                $templates = Get-ChildItem -Path "$(Build.SourcesDirectory)/templates/analytics-rules" -Filter "*.json" -File -ErrorAction SilentlyContinue
+                
+                if ($templates.Count -eq 0) {
+                  Write-Host "No analytics rules to deploy"
+                } else {
+                  Write-Host "Found $($templates.Count) analytics rule template(s)"
+                  
+                  foreach ($template in $templates) {
+                    Write-Host "`nDeploying: $($template.Name)"
+                    
+                    $deploymentName = "sentinel-analytics-$($template.BaseName)-$(Get-Date -Format 'yyyyMMddHHmmss')"
+                    
+                    az deployment group create `
+                      --resource-group "$(AZURE_RESOURCE_GROUP)" `
+                      --name $deploymentName `
+                      --template-file $template.FullName `
+                      --parameters workspace="$(SENTINEL_WORKSPACE_NAME)" `
+                      --mode Incremental
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                      Write-Host "✓ Successfully deployed $($template.Name)" -ForegroundColor Green
+                      $totalDeployed++
+                    } else {
+                      Write-Host "✗ Failed to deploy $($template.Name)" -ForegroundColor Red
+                      $totalFailed++
+                    }
+                  }
+                }
+                
+                # Deploy Workbooks
+                Write-Host "`n" + ("=" * 80)
+                Write-Host "Deploying Workbooks"
+                Write-Host "=" * 80
+                
+                $templates = Get-ChildItem -Path "$(Build.SourcesDirectory)/templates/workbooks" -Filter "*.json" -File -ErrorAction SilentlyContinue
+                
+                if ($templates.Count -eq 0) {
+                  Write-Host "No workbooks to deploy"
+                } else {
+                  Write-Host "Found $($templates.Count) workbook template(s)"
+                  
+                  foreach ($template in $templates) {
+                    Write-Host "`nDeploying: $($template.Name)"
+                    
+                    $deploymentName = "sentinel-workbook-$($template.BaseName)-$(Get-Date -Format 'yyyyMMddHHmmss')"
+                    
+                    az deployment group create `
+                      --resource-group "$(AZURE_RESOURCE_GROUP)" `
+                      --name $deploymentName `
+                      --template-file $template.FullName `
+                      --parameters workspace="$(SENTINEL_WORKSPACE_NAME)" `
+                      --mode Incremental
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                      Write-Host "✓ Successfully deployed $($template.Name)" -ForegroundColor Green
+                      $totalDeployed++
+                    } else {
+                      Write-Host "✗ Failed to deploy $($template.Name)" -ForegroundColor Red
+                      $totalFailed++
+                    }
+                  }
+                }
+                
+                # Deploy Watchlists
+                Write-Host "`n" + ("=" * 80)
+                Write-Host "Deploying Watchlists"
+                Write-Host "=" * 80
+                
+                $templates = Get-ChildItem -Path "$(Build.SourcesDirectory)/templates/watchlists" -Filter "*.json" -File -ErrorAction SilentlyContinue
+                
+                if ($templates.Count -eq 0) {
+                  Write-Host "No watchlists to deploy"
+                } else {
+                  Write-Host "Found $($templates.Count) watchlist template(s)"
+                  
+                  foreach ($template in $templates) {
+                    Write-Host "`nDeploying: $($template.Name)"
+                    
+                    $deploymentName = "sentinel-watchlist-$($template.BaseName)-$(Get-Date -Format 'yyyyMMddHHmmss')"
+                    
+                    az deployment group create `
+                      --resource-group "$(AZURE_RESOURCE_GROUP)" `
+                      --name $deploymentName `
+                      --template-file $template.FullName `
+                      --parameters workspace="$(SENTINEL_WORKSPACE_NAME)" `
+                      --mode Incremental
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                      Write-Host "✓ Successfully deployed $($template.Name)" -ForegroundColor Green
+                      $totalDeployed++
+                    } else {
+                      Write-Host "✗ Failed to deploy $($template.Name)" -ForegroundColor Red
+                      $totalFailed++
+                    }
+                  }
+                }
+                
+                # Print Summary
+                Write-Host "`n" + ("=" * 80)
+                Write-Host "Deployment Summary"
+                Write-Host "=" * 80
+                Write-Host "Total Deployed: $totalDeployed"
+                Write-Host "Total Failed: $totalFailed"
+                Write-Host "=" * 80
+                
+                if ($totalFailed -gt 0) {
+                  Write-Host "`n✗ Some deployments failed!" -ForegroundColor Red
+                  exit 1
+                } elseif ($totalDeployed -eq 0) {
+                  Write-Host "`nWarning: No templates found to deploy" -ForegroundColor Yellow
+                } else {
+                  Write-Host "`n✓ All deployments completed successfully!" -ForegroundColor Green
+                }

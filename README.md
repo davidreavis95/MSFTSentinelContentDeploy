@@ -1,6 +1,6 @@
 # Microsoft Sentinel Content Deployment
 
-Automated deployment solution for Microsoft Sentinel content including Analytics Rules, Workbooks, and Watchlists using Azure DevOps Pipelines and Python.
+Automated deployment solution for Microsoft Sentinel content including Analytics Rules, Workbooks, and Watchlists using Azure DevOps Pipelines and Azure CLI.
 
 ## 🚀 Quick Start
 
@@ -13,8 +13,8 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 - **Automated Deployment**: Deploy Sentinel content automatically via Azure DevOps Pipelines
 - **Simple Workflow**: Just export ARM templates from Sentinel and upload them
 - **Multiple Content Types**: Supports Analytics Rules, Workbooks, and Watchlists
-- **BICEP Compatible**: Works with both ARM templates and BICEP
-- **Python-Based**: Reliable deployment using Azure Python SDK
+- **Native Azure Integration**: Uses Azure CLI for reliable ARM template deployment
+- **No Dependencies**: Leverages built-in Azure DevOps tasks without requiring custom scripts
 
 ## 📋 Prerequisites
 
@@ -28,7 +28,6 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 
 3. **Azure DevOps Pipeline Variables**:
    - `AZURE_SERVICE_CONNECTION`: Name of the Azure RM service connection
-   - `AZURE_SUBSCRIPTION_ID`: Azure Subscription ID
    - `AZURE_RESOURCE_GROUP`: Resource Group containing Sentinel workspace
    - `SENTINEL_WORKSPACE_NAME`: Name of the Sentinel workspace
 
@@ -54,7 +53,6 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 2. Create a new variable group named `sentinel-deployment-vars` (or use pipeline variables)
 3. Add the following variables:
    - `AZURE_SERVICE_CONNECTION`: Name of the service connection from Step 1
-   - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
    - `AZURE_RESOURCE_GROUP`: Resource group name containing Sentinel workspace
    - `SENTINEL_WORKSPACE_NAME`: Name of the Sentinel workspace
 
@@ -108,9 +106,6 @@ MSFTSentinelContentDeploy/
 │   │   └── example-security-overview.json
 │   └── watchlists/                        # Watchlist ARM templates
 │       └── example-high-value-assets.json
-├── scripts/
-│   └── deploy_sentinel_content.py         # Python deployment script
-├── requirements.txt                        # Python dependencies
 └── README.md                              # This file
 ```
 
@@ -120,24 +115,23 @@ The `templates/` directory contains example ARM templates for each content type.
 
 ## 🔧 Local Testing
 
-You can test the deployment script locally:
+You can test ARM template deployments locally using Azure CLI:
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Authenticate with Azure
+az login  # Interactive login
 
 # Set environment variables
-export AZURE_SUBSCRIPTION_ID="your-subscription-id"
 export AZURE_RESOURCE_GROUP="your-resource-group"
 export SENTINEL_WORKSPACE_NAME="your-workspace-name"
 
-# Authenticate with Azure (one of these methods)
-az login  # Interactive login
-# OR use service principal
-az login --service-principal -u <client-id> -p <client-secret> --tenant <tenant-id>
-
-# Run the deployment script
-python scripts/deploy_sentinel_content.py
+# Deploy a single template
+az deployment group create \
+  --resource-group "$AZURE_RESOURCE_GROUP" \
+  --name "test-deployment" \
+  --template-file templates/analytics-rules/example-suspicious-signin.json \
+  --parameters workspace="$SENTINEL_WORKSPACE_NAME" \
+  --mode Incremental
 ```
 
 ## 📝 Supported Content Types
@@ -198,6 +192,6 @@ This project is provided as-is for use with Microsoft Sentinel deployments.
 
 - [Microsoft Sentinel Documentation](https://learn.microsoft.com/azure/sentinel/)
 - [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
-- [Azure Python SDK](https://learn.microsoft.com/python/api/overview/azure/)
+- [Azure CLI Documentation](https://learn.microsoft.com/cli/azure/)
 - [Azure DevOps Pipelines Documentation](https://learn.microsoft.com/azure/devops/pipelines/)
 - [Azure DevOps Service Connections](https://learn.microsoft.com/azure/devops/pipelines/library/service-endpoints)
