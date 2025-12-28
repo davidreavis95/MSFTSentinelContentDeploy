@@ -18,9 +18,10 @@ Step 1: USER EXPORTS CONTENT
            │
            │ Download JSON
            ▼
-Step 2: USER UPLOADS TO GITHUB
+Step 2: USER UPLOADS TO REPOSITORY
 ┌─────────────────────────────────┐
-│    GitHub Repository            │
+│    Code Repository              │
+│    (Azure Repos/GitHub)         │
 │                                 │
 │  templates/                     │
 │  ├─ analytics-rules/            │
@@ -31,15 +32,16 @@ Step 2: USER UPLOADS TO GITHUB
            │
            │ git push
            ▼
-Step 3: GITHUB ACTIONS TRIGGERED
+Step 3: AZURE DEVOPS PIPELINE TRIGGERED
 ┌─────────────────────────────────┐
-│   GitHub Actions Workflow       │
+│   Azure DevOps Pipeline         │
 │                                 │
 │  ┌───────────────────────────┐  │
 │  │ 1. Checkout code          │  │
 │  │ 2. Setup Python 3.11      │  │
 │  │ 3. Install dependencies   │  │
-│  │ 4. Azure Login (OIDC)     │  │
+│  │ 4. Azure Login (Service   │  │
+│  │    Connection)            │  │
 │  │ 5. Run deploy script      │  │
 │  └───────────────────────────┘  │
 └─────────────────────────────────┘
@@ -76,16 +78,13 @@ Step 5: CONTENT DEPLOYED TO AZURE
 AUTHENTICATION FLOW:
 ────────────────────
 
-GitHub Actions ─────► Azure AD (OIDC Token)
-                      │
-                      ▼
-                   Service Principal
-                      │
-                      ▼
-                 Federated Credential
-                      │
-                      ▼
-              Microsoft Sentinel Workspace
+Azure DevOps Pipeline ──► Azure Service Connection
+                          │
+                          ▼
+                      Service Principal
+                          │
+                          ▼
+                  Microsoft Sentinel Workspace
 
 ═══════════════════════════════════════════════════════════════════════════
 
@@ -93,9 +92,7 @@ FILE ORGANIZATION:
 ──────────────────
 
 MSFTSentinelContentDeploy/
-├── .github/
-│   └── workflows/
-│       └── deploy-sentinel-content.yml    ◄─── GitHub Action definition
+├── azure-pipelines.yml                   ◄─── Azure DevOps Pipeline definition
 │
 ├── templates/
 │   ├── analytics-rules/                   ◄─── Add rule templates here

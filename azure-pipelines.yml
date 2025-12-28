@@ -1,0 +1,98 @@
+# Azure DevOps Pipeline for Microsoft Sentinel Content Deployment
+# This pipeline automatically deploys ARM templates for Sentinel content
+# Triggers on changes to templates and can be run manually
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - 'templates/**/*.json'
+
+# Allow manual runs with parameters
+parameters:
+  - name: environment
+    displayName: 'Environment to deploy to'
+    type: string
+    default: 'production'
+    values:
+      - production
+      - staging
+      - development
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.11'
+  # Option 1: Link to a variable group (recommended for multiple pipelines)
+  # Uncomment the line below and create a variable group named 'sentinel-deployment-vars'
+  # - group: sentinel-deployment-vars
+  
+  # Option 2: Define variables directly in the pipeline
+  # Set these variables in the Azure DevOps UI under Pipeline → Edit → Variables
+  # Or uncomment and set them here (not recommended for sensitive values)
+  # AZURE_SERVICE_CONNECTION: 'your-service-connection-name'  # REQUIRED
+  # AZURE_SUBSCRIPTION_ID: 'your-subscription-id'
+  # AZURE_RESOURCE_GROUP: 'your-resource-group'
+  # SENTINEL_WORKSPACE_NAME: 'your-workspace-name'
+
+stages:
+  - stage: Deploy
+    displayName: 'Deploy to Microsoft Sentinel'
+    jobs:
+      - job: DeployContent
+        displayName: 'Deploy Sentinel Content'
+        steps:
+          - checkout: self
+            displayName: 'Checkout repository'
+            
+          - task: UsePythonVersion@0
+            displayName: 'Set up Python $(pythonVersion)'
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+              
+          - task: Cache@2
+            displayName: 'Cache pip packages'
+            inputs:
+              key: 'python | "$(Agent.OS)" | $(Build.SourcesDirectory)/requirements.txt'
+              restoreKeys: |
+                python | "$(Agent.OS)"
+                python
+              path: $(Pipeline.Workspace)/.pip
+              
+          - script: |
+              python -m pip install --upgrade pip
+              pip install --cache-dir $(Pipeline.Workspace)/.pip -r requirements.txt
+            displayName: 'Install Python dependencies'
+            
+          - task: AzureCLI@2
+            displayName: 'Deploy Sentinel Content'
+            inputs:
+              azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Starting Microsoft Sentinel Content Deployment"
+                echo "Environment: ${{ parameters.environment }}"
+                echo "Subscription: $(AZURE_SUBSCRIPTION_ID)"
+                echo "Resource Group: $(AZURE_RESOURCE_GROUP)"
+                echo "Workspace: $(SENTINEL_WORKSPACE_NAME)"
+                
+                # Set environment variables for the Python script
+                export AZURE_SUBSCRIPTION_ID="$(AZURE_SUBSCRIPTION_ID)"
+                export AZURE_RESOURCE_GROUP="$(AZURE_RESOURCE_GROUP)"
+                export SENTINEL_WORKSPACE_NAME="$(SENTINEL_WORKSPACE_NAME)"
+                export TEMPLATES_DIR="templates"
+                
+                # Run the deployment script
+                python scripts/deploy_sentinel_content.py
+              addSpnToEnvironment: true
+              useGlobalConfig: true
+              
+          - script: |
+              az logout
+            displayName: 'Logout from Azure'
+            condition: always()
