@@ -196,8 +196,8 @@ This project is provided as-is for use with Microsoft Sentinel deployments.
 
 ## 🔗 Useful Links
 
-- [Microsoft Sentinel Documentation](https://docs.microsoft.com/azure/sentinel/)
-- [ARM Template Reference](https://docs.microsoft.com/azure/templates/)
-- [Azure Python SDK](https://docs.microsoft.com/python/api/overview/azure/)
-- [Azure DevOps Pipelines Documentation](https://docs.microsoft.com/azure/devops/pipelines/)
-- [Azure DevOps Service Connections](https://docs.microsoft.com/azure/devops/pipelines/library/service-endpoints)
+- [Microsoft Sentinel Documentation](https://learn.microsoft.com/azure/sentinel/)
+- [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
+- [Azure Python SDK](https://learn.microsoft.com/python/api/overview/azure/)
+- [Azure DevOps Pipelines Documentation](https://learn.microsoft.com/azure/devops/pipelines/)
+- [Azure DevOps Service Connections](https://learn.microsoft.com/azure/devops/pipelines/library/service-endpoints)

@@ -281,10 +281,10 @@ jobs:
 
 ## Additional Resources
 
-- [Azure DevOps Pipeline Documentation](https://docs.microsoft.com/azure/devops/pipelines/)
-- [Azure DevOps Service Connections](https://docs.microsoft.com/azure/devops/pipelines/library/service-endpoints)
-- [Azure DevOps Variables](https://docs.microsoft.com/azure/devops/pipelines/process/variables)
-- [Microsoft Sentinel Documentation](https://docs.microsoft.com/azure/sentinel/)
+- [Azure DevOps Pipeline Documentation](https://learn.microsoft.com/azure/devops/pipelines/)
+- [Azure DevOps Service Connections](https://learn.microsoft.com/azure/devops/pipelines/library/service-endpoints)
+- [Azure DevOps Variables](https://learn.microsoft.com/azure/devops/pipelines/process/variables)
+- [Microsoft Sentinel Documentation](https://learn.microsoft.com/azure/sentinel/)
 
 ## Support
 

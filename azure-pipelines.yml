@@ -31,8 +31,9 @@ variables:
   # - group: sentinel-deployment-vars
   
   # Option 2: Define variables directly in the pipeline
-  # Uncomment and set these variables, or use the Azure DevOps UI to add them as pipeline variables
-  # AZURE_SERVICE_CONNECTION: 'your-service-connection-name'
+  # Set these variables in the Azure DevOps UI under Pipeline → Edit → Variables
+  # Or uncomment and set them here (not recommended for sensitive values)
+  # AZURE_SERVICE_CONNECTION: 'your-service-connection-name'  # REQUIRED
   # AZURE_SUBSCRIPTION_ID: 'your-subscription-id'
   # AZURE_RESOURCE_GROUP: 'your-resource-group'
   # SENTINEL_WORKSPACE_NAME: 'your-workspace-name'
@@ -56,7 +57,7 @@ stages:
           - task: Cache@2
             displayName: 'Cache pip packages'
             inputs:
-              key: 'python | "$(Agent.OS)" | requirements.txt'
+              key: 'python | "$(Agent.OS)" | $(Build.SourcesDirectory)/requirements.txt'
               restoreKeys: |
                 python | "$(Agent.OS)"
                 python
