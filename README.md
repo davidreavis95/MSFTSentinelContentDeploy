@@ -2,6 +2,10 @@
 
 Automated deployment solution for Microsoft Sentinel content including Analytics Rules, Workbooks, and Watchlists using GitHub Actions and Python.
 
+## 🚀 Quick Start
+
+**New to this project?** Check out the [Quick Start Guide](QUICKSTART.md) to get up and running in 5 minutes!
+
 ## 🚀 Features
 
 - **Automated Deployment**: Deploy Sentinel content automatically via GitHub Actions
