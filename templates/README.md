@@ -21,8 +21,8 @@ This directory contains ARM templates for Microsoft Sentinel content. The deploy
    - Commit and push to trigger deployment
 
 3. **Automatic Deployment**:
-   - GitHub Actions will automatically deploy your content
-   - Monitor the Actions tab for deployment status
+   - Azure DevOps Pipeline will automatically deploy your content
+   - Monitor the Pipelines tab for deployment status
 
 ## Example Templates
 

@@ -1,6 +1,6 @@
 # Microsoft Sentinel Content Deployment
 
-Automated deployment solution for Microsoft Sentinel content including Analytics Rules, Workbooks, and Watchlists using GitHub Actions and Python.
+Automated deployment solution for Microsoft Sentinel content including Analytics Rules, Workbooks, and Watchlists using Azure DevOps Pipelines and Python.
 
 ## 🚀 Quick Start
 
@@ -8,7 +8,7 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 
 ## 🚀 Features
 
-- **Automated Deployment**: Deploy Sentinel content automatically via GitHub Actions
+- **Automated Deployment**: Deploy Sentinel content automatically via Azure DevOps Pipelines
 - **Simple Workflow**: Just export ARM templates from Sentinel and upload them
 - **Multiple Content Types**: Supports Analytics Rules, Workbooks, and Watchlists
 - **BICEP Compatible**: Works with both ARM templates and BICEP
@@ -20,53 +20,50 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
    - Existing Microsoft Sentinel workspace
    - Azure subscription with appropriate permissions
 
-2. **Azure Service Principal** (for GitHub Actions):
-   - Create an App Registration in Azure AD
-   - Assign appropriate permissions to the Sentinel workspace
-   - Configure federated credentials for GitHub Actions
+2. **Azure DevOps Project**:
+   - Azure DevOps organization and project
+   - Azure Resource Manager service connection configured
 
-3. **GitHub Repository Secrets**:
-   - `AZURE_CLIENT_ID`: Service Principal Client ID
-   - `AZURE_TENANT_ID`: Azure AD Tenant ID
+3. **Azure DevOps Pipeline Variables**:
+   - `AZURE_SERVICE_CONNECTION`: Name of the Azure RM service connection
    - `AZURE_SUBSCRIPTION_ID`: Azure Subscription ID
    - `AZURE_RESOURCE_GROUP`: Resource Group containing Sentinel workspace
    - `SENTINEL_WORKSPACE_NAME`: Name of the Sentinel workspace
 
 ## 🛠️ Setup Instructions
 
-### Step 1: Configure Azure Service Principal
+### Step 1: Create Azure DevOps Service Connection
 
-```bash
-# Create a service principal with federated credentials for GitHub Actions
-az ad sp create-for-rbac --name "github-sentinel-deployer" \
-  --role "Microsoft Sentinel Contributor" \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group}
+1. Go to your Azure DevOps project
+2. Navigate to **Project Settings** → **Service connections**
+3. Click **New service connection** → **Azure Resource Manager**
+4. Select **Service principal (automatic)**
+5. Configure the connection:
+   - **Scope level**: Subscription
+   - **Subscription**: Select your Azure subscription
+   - **Resource group**: Select the resource group containing your Sentinel workspace
+   - **Service connection name**: `sentinel-deployer` (or your preferred name)
+6. Grant access permission to all pipelines (or configure as needed)
+7. Click **Save**
 
-# Note down the output: clientId, tenantId, subscriptionId
-```
+### Step 2: Configure Pipeline Variables
 
-### Step 2: Configure Federated Credentials
+1. In Azure DevOps, go to **Pipelines** → **Library**
+2. Create a new variable group named `sentinel-deployment-vars` (or use pipeline variables)
+3. Add the following variables:
+   - `AZURE_SERVICE_CONNECTION`: Name of the service connection from Step 1
+   - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
+   - `AZURE_RESOURCE_GROUP`: Resource group name containing Sentinel workspace
+   - `SENTINEL_WORKSPACE_NAME`: Name of the Sentinel workspace
 
-1. Go to Azure Portal → Azure Active Directory → App Registrations
-2. Select your app registration
-3. Go to "Certificates & secrets" → "Federated credentials"
-4. Add a new credential:
-   - **Federated credential scenario**: GitHub Actions
-   - **Organization**: Your GitHub username/org
-   - **Repository**: Your repository name
-   - **Entity type**: Branch
-   - **GitHub branch name**: main
+### Step 3: Create the Pipeline
 
-### Step 3: Add GitHub Secrets
-
-1. Go to your GitHub repository
-2. Navigate to Settings → Secrets and variables → Actions
-3. Add the following secrets:
-   - `AZURE_CLIENT_ID`
-   - `AZURE_TENANT_ID`
-   - `AZURE_SUBSCRIPTION_ID`
-   - `AZURE_RESOURCE_GROUP`
-   - `SENTINEL_WORKSPACE_NAME`
+1. In Azure DevOps, go to **Pipelines** → **Create Pipeline**
+2. Select **Azure Repos Git** (or your repository source)
+3. Select your repository
+4. Choose **Existing Azure Pipelines YAML file**
+5. Select `/azure-pipelines.yml`
+6. Click **Run** to test the pipeline
 
 ## 📦 How to Use
 
@@ -93,17 +90,15 @@ az ad sp create-for-rbac --name "github-sentinel-deployer" \
    ```
 
 4. **Automatic Deployment**:
-   - The GitHub Action will automatically trigger
+   - The Azure DevOps Pipeline will automatically trigger
    - Your content will be deployed to the Sentinel workspace
-   - Check the Actions tab to see deployment status
+   - Check the Pipelines tab to see deployment status
 
 ### Directory Structure
 
 ```
 MSFTSentinelContentDeploy/
-├── .github/
-│   └── workflows/
-│       └── deploy-sentinel-content.yml    # GitHub Action workflow
+├── azure-pipelines.yml                    # Azure DevOps Pipeline definition
 ├── templates/
 │   ├── analytics-rules/                   # Analytics Rules ARM templates
 │   │   └── example-suspicious-signin.json
@@ -160,27 +155,34 @@ Place ARM templates for watchlists in `templates/watchlists/`. These are custom 
 
 ## 🔐 Security Best Practices
 
-1. **Use Federated Credentials**: Avoid storing long-lived secrets in GitHub
+1. **Use Service Connections**: Azure DevOps service connections provide secure, managed authentication
 2. **Least Privilege**: Grant only necessary permissions to the service principal
 3. **Review Changes**: Always review ARM templates before deployment
 4. **Audit Logs**: Monitor Azure Activity Logs for deployment actions
+5. **Protected Variables**: Mark sensitive pipeline variables as secret
 
 ## 🐛 Troubleshooting
 
 ### Deployment Fails with Authentication Error
-- Verify GitHub secrets are correctly set
-- Ensure service principal has proper permissions
-- Check federated credential configuration
+- Verify pipeline variables are correctly set
+- Ensure Azure service connection is properly configured
+- Check that service principal has proper permissions on the resource group
 
 ### Template Deployment Error
 - Validate ARM template JSON syntax
 - Ensure workspace parameter is correctly set
 - Check that resource types match Sentinel API versions
+- Review pipeline logs for detailed error messages
 
 ### No Templates Found
 - Verify templates are in the correct directories
 - Ensure files have `.json` extension
 - Check that templates follow the ARM template schema
+
+### Pipeline Doesn't Trigger
+- Verify the trigger paths in azure-pipelines.yml
+- Check that changes are pushed to the main branch
+- Ensure the pipeline is enabled in Azure DevOps
 
 ## 🤝 Contributing
 
@@ -195,4 +197,5 @@ This project is provided as-is for use with Microsoft Sentinel deployments.
 - [Microsoft Sentinel Documentation](https://docs.microsoft.com/azure/sentinel/)
 - [ARM Template Reference](https://docs.microsoft.com/azure/templates/)
 - [Azure Python SDK](https://docs.microsoft.com/python/api/overview/azure/)
-- [GitHub Actions with Azure](https://docs.microsoft.com/azure/developer/github/connect-from-azure)
+- [Azure DevOps Pipelines Documentation](https://docs.microsoft.com/azure/devops/pipelines/)
+- [Azure DevOps Service Connections](https://docs.microsoft.com/azure/devops/pipelines/library/service-endpoints)

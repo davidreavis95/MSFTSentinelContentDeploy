@@ -24,7 +24,7 @@ Thank you for using the Microsoft Sentinel Content Deployment solution! This gui
    ```
 
 4. **Monitor deployment**:
-   - Go to the "Actions" tab in GitHub
+   - Go to the "Pipelines" tab in Azure DevOps
    - Watch your deployment progress
    - Check for any errors
 
@@ -111,8 +111,8 @@ While the solution uses ARM templates, you can also work with BICEP:
 
 ### Deployment Fails
 
-1. **Check GitHub Action logs**:
-   - Actions tab → Select failed run
+1. **Check Azure DevOps Pipeline logs**:
+   - Pipelines tab → Select failed run
    - Review error messages
 
 2. **Common issues**:
@@ -120,6 +120,7 @@ While the solution uses ARM templates, you can also work with BICEP:
    - Missing required parameters
    - Insufficient permissions
    - API version mismatch
+   - Service connection not configured properly
 
 3. **Validation**:
    ```bash
@@ -132,15 +133,15 @@ While the solution uses ARM templates, you can also work with BICEP:
 
 ### Authentication Issues
 
-- Verify all GitHub secrets are set correctly
-- Check service principal permissions
-- Ensure federated credentials are configured for the correct repository
+- Verify all pipeline variables are set correctly
+- Check service connection is working (test in Azure DevOps settings)
+- Ensure service principal has proper permissions on the resource group
 
 ## Contributing to the Project
 
 ### Reporting Issues
 
-- Use GitHub Issues to report bugs
+- Use the repository's issue tracking system to report bugs
 - Include error messages and logs
 - Describe steps to reproduce
 
