@@ -38,25 +38,24 @@ Step 3: AZURE DEVOPS PIPELINE TRIGGERED
 │                                 │
 │  ┌───────────────────────────┐  │
 │  │ 1. Checkout code          │  │
-│  │ 2. Setup Python 3.11      │  │
-│  │ 3. Install dependencies   │  │
-│  │ 4. Azure Login (Service   │  │
-│  │    Connection)            │  │
-│  │ 5. Run deploy script      │  │
+│  │ 2. Authenticate to Azure  │  │
+│  │    (Service Connection)   │  │
+│  │ 3. Discover templates     │  │
+│  │ 4. Deploy using Azure CLI │  │
 │  └───────────────────────────┘  │
 └─────────────────────────────────┘
            │
            │ Execute deployment
            ▼
-Step 4: PYTHON SCRIPT DEPLOYS
+Step 4: AZURE CLI DEPLOYS
 ┌─────────────────────────────────┐
-│   deploy_sentinel_content.py    │
+│   Azure CLI (via AzureCLI@2)    │
 │                                 │
 │  ┌───────────────────────────┐  │
 │  │ • Discover templates      │  │
-│  │ • Load ARM templates      │  │
-│  │ • Prepare parameters      │  │
-│  │ • Deploy to Azure         │  │
+│  │ • Loop through each file  │  │
+│  │ • Deploy ARM template     │  │
+│  │ • Validate deployment     │  │
 │  └───────────────────────────┘  │
 └─────────────────────────────────┘
            │
@@ -99,10 +98,7 @@ MSFTSentinelContentDeploy/
 │   ├── workbooks/                         ◄─── Add workbook templates here
 │   └── watchlists/                        ◄─── Add watchlist templates here
 │
-├── scripts/
-│   └── deploy_sentinel_content.py         ◄─── Deployment logic
-│
-└── requirements.txt                       ◄─── Python dependencies
+└── README.md
 
 ═══════════════════════════════════════════════════════════════════════════
 

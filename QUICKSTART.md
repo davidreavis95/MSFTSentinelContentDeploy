@@ -36,7 +36,6 @@ In your Azure DevOps project:
 | Variable Name | Value |
 |---------------|-------|
 | `AZURE_SERVICE_CONNECTION` | Name of service connection (e.g., "sentinel-deployer") |
-| `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID |
 | `AZURE_RESOURCE_GROUP` | Resource group name |
 | `SENTINEL_WORKSPACE_NAME` | Sentinel workspace name |
 
@@ -101,7 +100,7 @@ Your content is now automatically deployed to Sentinel. Add more templates anyti
 
 **Authentication error?**
 - Confirm service connection is working (test connection in settings)
-- Check subscription ID and resource group match
+- Check resource group exists and is accessible
 - Verify service principal has access to Sentinel workspace
 
 **Template error?**

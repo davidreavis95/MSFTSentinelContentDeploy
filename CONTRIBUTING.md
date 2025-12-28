@@ -54,28 +54,23 @@ Thank you for using the Microsoft Sentinel Content Deployment solution! This gui
 
 ### Manual Deployment
 
-Run the deployment script locally for testing:
+Test ARM template deployments locally using Azure CLI:
 
 ```bash
 # Set environment variables
-export AZURE_SUBSCRIPTION_ID="xxx"
 export AZURE_RESOURCE_GROUP="xxx"
 export SENTINEL_WORKSPACE_NAME="xxx"
 
 # Authenticate
 az login
 
-# Run deployment
-python scripts/deploy_sentinel_content.py
-```
-
-### Custom Template Directory
-
-Use a different templates directory:
-
-```bash
-export TEMPLATES_DIR="custom-templates"
-python scripts/deploy_sentinel_content.py
+# Deploy a single template
+az deployment group create \
+  --resource-group "$AZURE_RESOURCE_GROUP" \
+  --name "test-deployment" \
+  --template-file templates/analytics-rules/your-rule.json \
+  --parameters workspace="$SENTINEL_WORKSPACE_NAME" \
+  --mode Incremental
 ```
 
 ### Working with BICEP
@@ -124,11 +119,17 @@ While the solution uses ARM templates, you can also work with BICEP:
 
 3. **Validation**:
    ```bash
-   # Validate JSON syntax
+   # Validate JSON syntax using jq
+   jq . templates/analytics-rules/your-file.json
+   
+   # Or using Python
    python -m json.tool templates/analytics-rules/your-file.json
    
-   # Or use jq
-   jq . templates/analytics-rules/your-file.json
+   # Validate ARM template using Azure CLI
+   az deployment group validate \
+     --resource-group "$AZURE_RESOURCE_GROUP" \
+     --template-file templates/analytics-rules/your-file.json \
+     --parameters workspace="$SENTINEL_WORKSPACE_NAME"
    ```
 
 ### Authentication Issues
@@ -161,16 +162,22 @@ While the solution uses ARM templates, you can also work with BICEP:
 
 ## Code Structure
 
+The deployment logic is contained in the Azure DevOps pipeline (`azure-pipelines.yml`):
+
 ```
-scripts/deploy_sentinel_content.py
-├── SentinelContentDeployer class
-│   ├── discover_templates()    # Find all ARM templates
-│   ├── load_template()         # Parse JSON files
-│   ├── prepare_parameters()    # Set up deployment parameters
-│   ├── deploy_template()       # Deploy single template
-│   └── deploy_all()            # Deploy all discovered templates
-└── main()                      # Entry point
+azure-pipelines.yml
+└── Deploy Stage
+    └── DeployContent Job
+        └── AzureCLI@2 Task (PowerShell script)
+            ├── Discover Analytics Rules templates
+            ├── Deploy Analytics Rules using az deployment
+            ├── Discover Workbooks templates
+            ├── Deploy Workbooks using az deployment
+            ├── Discover Watchlists templates
+            └── Deploy Watchlists using az deployment
 ```
+
+The pipeline uses Azure CLI's `az deployment group create` command to deploy each ARM template.
 
 ## Support
 

@@ -4,7 +4,7 @@ This guide provides detailed instructions for setting up the Microsoft Sentinel 
 
 ## Overview
 
-This repository uses Azure DevOps Pipelines to automatically deploy Microsoft Sentinel content (Analytics Rules, Workbooks, and Watchlists) from ARM templates stored in the repository.
+This repository uses Azure DevOps Pipelines to automatically deploy Microsoft Sentinel content (Analytics Rules, Workbooks, and Watchlists) from ARM templates stored in the repository using Azure CLI.
 
 ## Prerequisites
 
@@ -64,7 +64,6 @@ You have two options for configuring variables:
    | Variable Name | Value | Secret? |
    |---------------|-------|---------|
    | `AZURE_SERVICE_CONNECTION` | Name of service connection from Step 1 | No |
-   | `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID | No |
    | `AZURE_RESOURCE_GROUP` | Resource group containing Sentinel | No |
    | `SENTINEL_WORKSPACE_NAME` | Name of Sentinel workspace | No |
 
@@ -85,7 +84,6 @@ You have two options for configuring variables:
    - Uncomment the variable definitions in `azure-pipelines.yml`:
    ```yaml
    AZURE_SERVICE_CONNECTION: 'your-service-connection-name'
-   AZURE_SUBSCRIPTION_ID: 'your-subscription-id'
    AZURE_RESOURCE_GROUP: 'your-resource-group'
    SENTINEL_WORKSPACE_NAME: 'your-workspace-name'
    ```
@@ -170,7 +168,6 @@ Ensure the service principal has appropriate permissions in Azure:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `AZURE_SERVICE_CONNECTION` | Name of the Azure RM service connection | `sentinel-deployer` |
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID (GUID) | `12345678-1234-1234-1234-123456789abc` |
 | `AZURE_RESOURCE_GROUP` | Resource group containing Sentinel | `rg-sentinel-prod` |
 | `SENTINEL_WORKSPACE_NAME` | Name of the Sentinel workspace | `sentinel-workspace-prod` |
 
@@ -189,18 +186,17 @@ When running manually, you can select:
 
 ### Caching
 
-The pipeline caches Python packages to speed up subsequent runs.
+The pipeline no longer requires caching as it uses Azure CLI which is pre-installed on Azure DevOps agents.
 
 ### Stages and Jobs
 
 - **Stage**: Deploy
   - **Job**: DeployContent
     - Checkout code
-    - Set up Python 3.11
-    - Cache pip packages
-    - Install dependencies
-    - Deploy Sentinel content
-    - Logout from Azure
+    - Deploy Sentinel content using Azure CLI
+      - Deploy Analytics Rules
+      - Deploy Workbooks
+      - Deploy Watchlists
 
 ## Troubleshooting
 
