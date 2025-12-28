@@ -13,7 +13,6 @@ import glob
 from typing import List, Dict, Any
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.resource.resources.models import DeploymentMode
 
 
 class SentinelContentDeployer:
@@ -91,8 +90,10 @@ class SentinelContentDeployer:
                     parameters[param_name] = {"value": self.workspace_name}
                 elif "defaultValue" in param_def:
                     parameters[param_name] = {"value": param_def["defaultValue"]}
-                elif param_def.get("type", "").lower() == "string":
-                    parameters[param_name] = {"value": ""}
+                else:
+                    # For required parameters without defaults, log a warning
+                    # The deployment will proceed and let Azure validate
+                    print(f"  Warning: Parameter '{param_name}' has no default value")
                     
         return parameters
     
@@ -118,7 +119,7 @@ class SentinelContentDeployer:
             
             # Prepare deployment properties
             deployment_properties = {
-                "mode": DeploymentMode.incremental,
+                "mode": "Incremental",  # Use string literal for compatibility
                 "template": template,
                 "parameters": parameters
             }
