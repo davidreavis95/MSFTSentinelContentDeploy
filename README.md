@@ -67,17 +67,21 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 5. Select `/azure-pipelines.yml`
 6. Click **Run** to test the pipeline
 
-### GitHub Actions (Scheduled Query Rules)
+### GitHub Actions (Sentinel Content & Scheduled Query Rules)
 
-To deploy scheduled query rules directly from GitHub (per the [Microsoft CI/CD guidance](https://learn.microsoft.com/en-us/azure/sentinel/ci-cd?tabs=github)):
+Use this workflow when your content repository is hosted on GitHub; the Azure DevOps pipeline above remains available as an alternative.
+
+To deploy scheduled query rules and other Sentinel content directly from GitHub (per the [Microsoft CI/CD guidance](https://learn.microsoft.com/en-us/azure/sentinel/ci-cd?tabs=github)):
 
 1. Create the following GitHub **Actions secrets** in your repository:
-   - `AZURE_CREDENTIALS` – service principal JSON (appId, tenantId, clientSecret, subscriptionId)
+   - `AZURE_CLIENT_ID` – workload identity-enabled app registration client ID
+   - `AZURE_TENANT_ID` – tenant that hosts the app registration
    - `AZURE_SUBSCRIPTION_ID` – target subscription
    - `AZURE_RESOURCE_GROUP` – resource group hosting the Sentinel workspace
    - `SENTINEL_WORKSPACE_NAME` – Sentinel workspace name
-2. Push or update analytics rule templates under `templates/analytics-rules/`. The workflow `.github/workflows/deploy-sentinel.yml` automatically installs dependencies, signs in with Azure, and runs `scripts/deploy_sentinel_content.py`.
-3. Optionally run the workflow manually with **Run workflow** to redeploy rules without code changes.
+2. Link the GitHub workflow to your app registration using a federated credential (OIDC) so `azure/login` can authenticate without storing long-lived secrets. Follow the Microsoft Entra ID workload identity federation steps for GitHub Actions [here](https://learn.microsoft.com/entra/identity/workload-identities/workload-identity-federation-create-trust-github).
+3. Push or update Sentinel templates (analytics rules, workbooks, or watchlists) under the `templates/` folder. The workflow `.github/workflows/deploy-sentinel-content.yml` automatically installs dependencies, signs in with Azure, and runs `scripts/deploy_sentinel_content.py`.
+4. Optionally run the workflow manually with **Run workflow** to redeploy content without code changes.
 
 ## 📦 How to Use
 
