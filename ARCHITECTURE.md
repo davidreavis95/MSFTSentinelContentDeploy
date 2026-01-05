@@ -32,16 +32,16 @@ Step 2: USER UPLOADS TO REPOSITORY
            │
            │ git push
            ▼
-Step 3: AZURE DEVOPS PIPELINE TRIGGERED
+Step 3: CI PIPELINE TRIGGERED
 ┌─────────────────────────────────┐
-│   Azure DevOps Pipeline         │
+│   GitHub Actions / Azure Pipelines│
 │                                 │
 │  ┌───────────────────────────┐  │
 │  │ 1. Checkout code          │  │
 │  │ 2. Setup Python 3.11      │  │
 │  │ 3. Install dependencies   │  │
-│  │ 4. Azure Login (Service   │  │
-│  │    Connection)            │  │
+│  │ 4. Azure Login (OIDC or   │  │
+│  │    Service Connection)    │  │
 │  │ 5. Run deploy script      │  │
 │  └───────────────────────────┘  │
 └─────────────────────────────────┘

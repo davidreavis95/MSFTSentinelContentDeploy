@@ -67,6 +67,18 @@ Automated deployment solution for Microsoft Sentinel content including Analytics
 5. Select `/azure-pipelines.yml`
 6. Click **Run** to test the pipeline
 
+### GitHub Actions (Scheduled Query Rules)
+
+To deploy scheduled query rules directly from GitHub (per the [Microsoft CI/CD guidance](https://learn.microsoft.com/en-us/azure/sentinel/ci-cd?tabs=github)):
+
+1. Create the following GitHub **Actions secrets** in your repository:
+   - `AZURE_CREDENTIALS` – service principal JSON (appId, tenantId, clientSecret, subscriptionId)
+   - `AZURE_SUBSCRIPTION_ID` – target subscription
+   - `AZURE_RESOURCE_GROUP` – resource group hosting the Sentinel workspace
+   - `SENTINEL_WORKSPACE_NAME` – Sentinel workspace name
+2. Push or update analytics rule templates under `templates/analytics-rules/`. The workflow `.github/workflows/deploy-sentinel.yml` automatically installs dependencies, signs in with Azure, and runs `scripts/deploy_sentinel_content.py`.
+3. Optionally run the workflow manually with **Run workflow** to redeploy rules without code changes.
+
 ## 📦 How to Use
 
 ### Deploying Content
